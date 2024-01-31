@@ -4,7 +4,7 @@ project(EmotivBluetoothDevice VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Quick)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Quick Bluetooth)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
@@ -31,8 +31,25 @@ set_target_properties(appEmotivBluetoothDevice PROPERTIES
 )
 
 target_link_libraries(appEmotivBluetoothDevice
-    PRIVATE Qt6::Quick
+    PRIVATE Qt6::Quick Qt6::Bluetooth
 )
+target_link_directories(appEmotivBluetoothDevice
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+if (APPLE)
+    # Using absolute path for shared plist files is a Ninja bug workaround
+    get_filename_component(CONFIG_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/config ABSOLUTE)
+    if (IOS)
+        set_target_properties(appEmotivBluetoothDevice PROPERTIES
+            MACOSX_BUNDLE_INFO_PLIST "${CONFIG_PLIST}/Info.cmake.ios.plist"
+        )
+    else()
+        set_target_properties(appEmotivBluetoothDevice PROPERTIES
+            MACOSX_BUNDLE_INFO_PLIST "${CONFIG_PLIST}/Info.cmake.macos.plist"
+        )
+    endif()
+endif()
 
 include(GNUInstallDirs)
 install(TARGETS appEmotivBluetoothDevice
