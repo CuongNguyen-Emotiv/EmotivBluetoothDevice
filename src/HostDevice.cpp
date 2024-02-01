@@ -1,10 +1,13 @@
 #include "HostDevice.h"
 
+static constexpr auto UUID_SERVICE = "81072f40-9f3d-11e3-a9dc-0002a5d5c51b";
+static constexpr auto UUID_SERVICE_MN8 = "5d1c1b00-863c-11e6-ae22-56b6b6499611";
+
 HostDevice::HostDevice(QObject *parent)
     : QObject{parent}
 {
     mDiscoveryAgent = new QBluetoothDeviceDiscoveryAgent(this);
-    mDiscoveryAgent->setLowEnergyDiscoveryTimeout(5000);
+    mDiscoveryAgent->setLowEnergyDiscoveryTimeout(10000);
     connect(mDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceDiscovered,
             this, &HostDevice::onDeviceDiscovered);
     connect(mDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::errorOccurred,
@@ -13,6 +16,8 @@ HostDevice::HostDevice(QObject *parent)
             this, &HostDevice::onFinished);
     connect(mDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::canceled,
             this, &HostDevice::onCanceled);
+    connect(mDiscoveryAgent, &QBluetoothDeviceDiscoveryAgent::deviceUpdated,
+            this, &HostDevice::onDeviceUpdated);
 }
 
 void HostDevice::startScan()
@@ -29,23 +34,11 @@ void HostDevice::stopScan()
 
 void HostDevice::onDeviceDiscovered(const QBluetoothDeviceInfo &device)
 {
-    if (device.name() == "MN8 65D8") {
-        qDebug() << "Found new device -------------:";
-        qDebug() << "Address:" << device.address();
-        qDebug() << "Core config:" << device.coreConfigurations();
-        qDebug() << "Device uuid:" << device.deviceUuid();
-        qDebug() << "Is cached:" << device.isCached();
-        qDebug() << "Is valid:" << device.isValid();
-        qDebug() << "Major device class:" << device.majorDeviceClass();
-        qDebug() << "Manufacturer Data:" << device.manufacturerData();
-        qDebug() << "Manufacturer Ids:" << device.manufacturerIds();
-        qDebug() << "Minor Device Class:" << device.minorDeviceClass();
-        qDebug() << "Name:" << device.name();
-        qDebug() << "rssi:" << device.rssi();
-        qDebug() << "Service classes:" << device.serviceClasses();
-        qDebug() << "Service data:" << device.serviceData();
-        qDebug() << "Service Ids:" << device.serviceIds();
-        qDebug() << "Service uuids:" << device.serviceUuids();
+    if (isEmotivHeadset(device)) {
+        HeadsetItem headsetItem;
+        headsetItem.mBluetoothDeviceInfo = device;
+        mDeviceModel.addHeadset(headsetItem);
+        mNewFoundDevices.append(headsetItem);
     }
 }
 
@@ -56,12 +49,42 @@ void HostDevice::onErrorOccurred(QBluetoothDeviceDiscoveryAgent::Error error)
 
 void HostDevice::onFinished()
 {
+    for (const auto& oldDevice : mOldFoundDevices) {
+        if (!mNewFoundDevices.contains(oldDevice)) {
+            mDeviceModel.removeHeadset(oldDevice);
+        }
+    }
+    mOldFoundDevices = mNewFoundDevices;
+    mNewFoundDevices.clear();
     setState("Finished");
+    startScan();
 }
 
 void HostDevice::onCanceled()
 {
     setState("Canceled");
+}
+
+void HostDevice::onDeviceUpdated(const QBluetoothDeviceInfo &info, QBluetoothDeviceInfo::Fields updatedFields)
+{
+    if (isEmotivHeadset(info)) {
+        HeadsetItem headsetItem;
+        headsetItem.mBluetoothDeviceInfo = info;
+        mDeviceModel.addHeadset(headsetItem);
+    }
+}
+
+bool HostDevice::isEmotivHeadset(const QBluetoothDeviceInfo &device) const
+{
+    const auto& serviceUuids = device.serviceUuids();
+    return serviceUuids.contains(QBluetoothUuid(UUID_SERVICE))
+           || serviceUuids.contains(QBluetoothUuid(UUID_SERVICE_MN8))
+        ;
+}
+
+HeadsetModel *HostDevice::headsetModel()
+{
+    return &mDeviceModel;
 }
 
 QString HostDevice::state() const

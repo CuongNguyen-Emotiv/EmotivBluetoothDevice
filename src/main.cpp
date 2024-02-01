@@ -20,5 +20,10 @@ int main(int argc, char *argv[])
         Qt::QueuedConnection);
     engine.load(QUrl(QStringLiteral("qrc:/qml/Main.qml")));
 
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
+    engine.rootObjects().first()->setProperty("width", 640);
+    engine.rootObjects().first()->setProperty("height", 1136);
+#endif
+
     return app.exec();
 }
