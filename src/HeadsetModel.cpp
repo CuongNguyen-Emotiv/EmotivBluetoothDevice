@@ -18,13 +18,11 @@ QVariant HeadsetModel::data(const QModelIndex &index, int role) const
     const auto &device = mHeadsetItems.at(index.row());
 
     switch (role) {
-    case static_cast<int>(EmotiveDeviceRole::NAME_ROLE):
+    case static_cast<int>(HeadsetRole::NAME_ROLE):
         return device.mBluetoothDeviceInfo.name();
-    case static_cast<int>(EmotiveDeviceRole::BLUETOOTH_DEVICE_INFO_ROLE):
+    case static_cast<int>(HeadsetRole::BLUETOOTH_DEVICE_INFO_ROLE):
         return QVariant::fromValue(device.mBluetoothDeviceInfo);
-    case static_cast<int>(EmotiveDeviceRole::ADDRESS_ROLE):
-        return device.address();
-    case static_cast<int>(EmotiveDeviceRole::RSSI_ROLE):
+    case static_cast<int>(HeadsetRole::RSSI_ROLE):
         return device.mBluetoothDeviceInfo.rssi();
     default:
         return QVariant();
@@ -66,9 +64,8 @@ void HeadsetModel::clear()
 QHash<int, QByteArray> HeadsetModel::roleNames() const
 {
     QHash<int, QByteArray> roles;
-    roles[static_cast<int>(EmotiveDeviceRole::NAME_ROLE)] = "name";
-    roles[static_cast<int>(EmotiveDeviceRole::BLUETOOTH_DEVICE_INFO_ROLE)] = "bluetoothDeviceInfo";
-    roles[static_cast<int>(EmotiveDeviceRole::ADDRESS_ROLE)] = "address";
-    roles[static_cast<int>(EmotiveDeviceRole::RSSI_ROLE)] = "rssi";
+    roles[static_cast<int>(HeadsetRole::NAME_ROLE)] = "name";
+    roles[static_cast<int>(HeadsetRole::BLUETOOTH_DEVICE_INFO_ROLE)] = "bluetoothDeviceInfo";
+    roles[static_cast<int>(HeadsetRole::RSSI_ROLE)] = "rssi";
     return roles;
 }

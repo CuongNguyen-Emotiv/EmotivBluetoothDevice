@@ -4,7 +4,7 @@ HeadsetController::HeadsetController(QObject *parent)
     : QObject(parent)
 {
     connect(&mConnectTimeout, &QTimer::timeout, this, [this]() {
-        if (mLowEnergyController && mLowEnergyController->state() != QLowEnergyController::ConnectedState) {
+        if (mLowEnergyController && mLowEnergyController->state() == QLowEnergyController::ConnectingState) {
             mLowEnergyController->disconnectFromDevice();
         }
     });
@@ -12,7 +12,7 @@ HeadsetController::HeadsetController(QObject *parent)
     mConnectTimeout.setSingleShot(true);
 
     connect(&mRssiReader, &QTimer::timeout, this, [this]() {
-        if (mLowEnergyController && mLowEnergyController->state() == QLowEnergyController::ConnectedState) {
+        if (mLowEnergyController && mLowEnergyController->state() != QLowEnergyController::UnconnectedState) {
             mLowEnergyController->readRssi();
         }
     });
@@ -50,7 +50,7 @@ void HeadsetController::connectToHeadset(const QVariant &bluetoothDeviceInfo)
     connect(mLowEnergyController, &QLowEnergyController::errorOccurred,
             this, &HeadsetController::onErrorOccurred);
     connect(mLowEnergyController, &QLowEnergyController::mtuChanged,
-            this, &HeadsetController::mtuChanged);
+            this, &HeadsetController::onMtuChanged);
     connect(mLowEnergyController, &QLowEnergyController::rssiRead,
             this, &HeadsetController::onRssiRead);
     connect(mLowEnergyController, &QLowEnergyController::serviceDiscovered,
@@ -74,6 +74,10 @@ void HeadsetController::onConnected()
 {
     setConnectStatus("Connected");
     mRssiReader.start();
+    if (mLowEnergyController) {
+        mServiceModel.clear();
+        mLowEnergyController->discoverServices();
+    }
 }
 
 void HeadsetController::onConnectionUpdated(const QLowEnergyConnectionParameters &parameters)
@@ -98,9 +102,19 @@ void HeadsetController::onErrorOccurred(QLowEnergyController::Error error)
     qInfo() << "Error occurred: " << error;
 }
 
-void HeadsetController::onServiceDiscovered(const QBluetoothUuid &service)
+void HeadsetController::onMtuChanged(int mtu)
 {
-    qInfo() << "Service discovered: " << service.toString();
+    setMtu(mtu);
+}
+
+void HeadsetController::onServiceDiscovered(const QBluetoothUuid &serviceUuid)
+{
+    QLowEnergyService *service = mLowEnergyController->createServiceObject(serviceUuid, mLowEnergyController);
+    if (!service) {
+        qWarning() << "Cannot create service for uuid" << serviceUuid;
+        return;
+    }
+    mServiceModel.addService(service);
 }
 
 void HeadsetController::onStateChanged(QLowEnergyController::ControllerState state)
@@ -109,9 +123,15 @@ void HeadsetController::onStateChanged(QLowEnergyController::ControllerState sta
     switch (state) {
     case QLowEnergyController::ControllerState::UnconnectedState:
         setConnectStatus("Disconnected");
+        setRssi(0);
+        setMtu(0);
+        mServiceModel.clear();
         break;
     case QLowEnergyController::ControllerState::ConnectingState:
         setConnectStatus("Connecting...");
+        setRssi(0);
+        setMtu(0);
+        mServiceModel.clear();
         break;
     case QLowEnergyController::ControllerState::ConnectedState:
         setConnectStatus("Connected");
@@ -146,6 +166,19 @@ void HeadsetController::setRssi(qint16 rssi)
     emit rssiChanged();
 }
 
+void HeadsetController::setMtu(int mtu)
+{
+    if (mMtu == mtu)
+        return;
+    mMtu = mtu;
+    emit mtuChanged();
+}
+
+ServiceModel* HeadsetController::serviceModel()
+{
+    return &mServiceModel;
+}
+
 QString HeadsetController::connectStatus() const
 {
     return mConnectStatus;
@@ -161,10 +194,7 @@ void HeadsetController::setConnectStatus(const QString &connectStatus)
 
 int HeadsetController::mtu() const
 {
-    if (mLowEnergyController) {
-        return mLowEnergyController->mtu();
-    }
-    return 0;
+    return mMtu;
 }
 
 qint16 HeadsetController::rssi() const

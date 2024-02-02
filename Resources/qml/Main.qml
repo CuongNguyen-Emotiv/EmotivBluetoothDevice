@@ -54,6 +54,7 @@ Window {
                 height: 600
                 width: 600
                 model: HostDevice.headsetModel
+                clip: true
                 delegate: Row {
                     spacing: 20
                     Button {

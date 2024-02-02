@@ -21,16 +21,18 @@ struct HeadsetItem
     bool operator==(const HeadsetItem &other) const {
         return address() == other.address();
     }
+
+    HeadsetItem() = default;
+    HeadsetItem(const QBluetoothDeviceInfo &device) : mBluetoothDeviceInfo(device) {}
 };
 
 class HeadsetModel : public QAbstractListModel
 {
     Q_OBJECT
 public:
-    enum class EmotiveDeviceRole {
+    enum class HeadsetRole {
         NAME_ROLE = Qt::UserRole + 1,
         BLUETOOTH_DEVICE_INFO_ROLE,
-        ADDRESS_ROLE,
         RSSI_ROLE,
     };
     explicit HeadsetModel(QObject *parent = nullptr);

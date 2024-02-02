@@ -36,11 +36,41 @@ Rectangle {
         }
 
         Text {
-            text: "Received Signal Strength Indicator (RSSI): " + (headsetController.connectStatus !== "Connected" ? 0 : headsetController.rssi)
+            text: "Received Signal Strength Indicator (RSSI): " + headsetController.rssi
         }
 
         Text {
-            text: "Maximum Transmission Unit (MTU): " + (headsetController.connectStatus !== "Connected" ? 0 : headsetController.mtu)
+            text: "Maximum Transmission Unit (MTU): " + headsetController.mtu
+        }
+
+        Text {
+            text: qsTr("Services: ")
+        }
+
+        ListView {
+            width: parent.width
+            height: 600
+            model: headsetController.serviceModel
+            clip: true
+            delegate: Row {
+                spacing: 10
+                Button {
+                    text: "Read"
+                    onClicked: {
+                        console.log(model.name)
+                    }
+                }
+
+                Text {
+                    text: model.name
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                Text {
+                    text: model.type
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+            }
         }
     }
 

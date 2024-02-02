@@ -35,10 +35,8 @@ void HostDevice::stopScan()
 void HostDevice::onDeviceDiscovered(const QBluetoothDeviceInfo &device)
 {
     if (isEmotivHeadset(device)) {
-        HeadsetItem headsetItem;
-        headsetItem.mBluetoothDeviceInfo = device;
-        mDeviceModel.addHeadset(headsetItem);
-        mNewFoundDevices.append(headsetItem);
+        mDeviceModel.addHeadset(device);
+        mNewFoundDevices.append(device);
     }
 }
 
@@ -68,9 +66,7 @@ void HostDevice::onCanceled()
 void HostDevice::onDeviceUpdated(const QBluetoothDeviceInfo &info, QBluetoothDeviceInfo::Fields updatedFields)
 {
     if (isEmotivHeadset(info)) {
-        HeadsetItem headsetItem;
-        headsetItem.mBluetoothDeviceInfo = info;
-        mDeviceModel.addHeadset(headsetItem);
+        mDeviceModel.addHeadset(info);
     }
 }
 
