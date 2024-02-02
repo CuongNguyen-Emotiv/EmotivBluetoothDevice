@@ -3,12 +3,15 @@
 #include <QQmlContext>
 #include "HostDevice.h"
 #include "Singleton.h"
+#include "HeadsetController.h"
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
+
+    qmlRegisterType<HeadsetController>("HeadsetController", 1, 0, "HeadsetController");
 
     engine.rootContext()->setContextProperty("HostDevice", Singleton<HostDevice>::instance());
 
