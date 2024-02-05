@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>qml/Main.qml</file>
         <file>qml/HeadsetInfo.qml</file>
+        <file>qml/ServiceInfo.qml</file>
     </qresource>
 </RCC>

@@ -13,6 +13,7 @@ class HeadsetController : public QObject
     Q_PROPERTY(int mtu READ mtu NOTIFY mtuChanged)
     Q_PROPERTY(qint16 rssi READ rssi NOTIFY rssiChanged)
     Q_PROPERTY(ServiceModel* serviceModel READ serviceModel CONSTANT)
+    Q_PROPERTY(QLowEnergyController *lowEnergyController READ lowEnergyController NOTIFY lowEnergyControllerChanged)
 public:
     explicit HeadsetController(QObject *parent = nullptr);
     ~HeadsetController();
@@ -28,11 +29,14 @@ public:
 
     ServiceModel* serviceModel();
 
+    QLowEnergyController *lowEnergyController() const;
+
 signals:
 
     void connectStatusChanged();
     void mtuChanged();
     void rssiChanged();
+    void lowEnergyControllerChanged();
 
 private slots:
     void onConnected();

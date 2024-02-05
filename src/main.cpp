@@ -4,6 +4,7 @@
 #include "HostDevice.h"
 #include "Singleton.h"
 #include "HeadsetController.h"
+#include "ServiceController.h"
 
 int main(int argc, char *argv[])
 {
@@ -12,6 +13,7 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
 
     qmlRegisterType<HeadsetController>("HeadsetController", 1, 0, "HeadsetController");
+    qmlRegisterType<ServiceController>("ServiceController", 1, 0, "ServiceController");
 
     engine.rootContext()->setContextProperty("HostDevice", Singleton<HostDevice>::instance());
 

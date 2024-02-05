@@ -22,8 +22,8 @@ HostDevice::HostDevice(QObject *parent)
 
 void HostDevice::startScan()
 {
-    mDiscoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
     setState("Scanning...");
+    mDiscoveryAgent->start(QBluetoothDeviceDiscoveryAgent::LowEnergyMethod);
 }
 
 void HostDevice::stopScan()

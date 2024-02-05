@@ -34,6 +34,7 @@ public:
     enum class ServiceRole {
         NAME_ROLE = Qt::UserRole + 1,
         TYPE_ROLE,
+        Q_LOW_ENERGY_SERVICE_PTR_ROLE,
     };
     explicit ServiceModel(QObject *parent = nullptr);
 

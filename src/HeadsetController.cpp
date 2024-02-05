@@ -38,6 +38,7 @@ void HeadsetController::connectToHeadset(const QVariant &bluetoothDeviceInfo)
     }
 
     mLowEnergyController = QLowEnergyController::createCentral(device, this);
+    emit lowEnergyControllerChanged();
 
     connect(mLowEnergyController, &QLowEnergyController::connected,
             this, &HeadsetController::onConnected);
@@ -111,7 +112,7 @@ void HeadsetController::onServiceDiscovered(const QBluetoothUuid &serviceUuid)
 {
     QLowEnergyService *service = mLowEnergyController->createServiceObject(serviceUuid, mLowEnergyController);
     if (!service) {
-        qWarning() << "Cannot create service for uuid" << serviceUuid;
+        qWarning() << "HeadsetController Cannot create service for uuid" << serviceUuid;
         return;
     }
     mServiceModel.addService(service);
@@ -172,6 +173,11 @@ void HeadsetController::setMtu(int mtu)
         return;
     mMtu = mtu;
     emit mtuChanged();
+}
+
+QLowEnergyController *HeadsetController::lowEnergyController() const
+{
+    return mLowEnergyController;
 }
 
 ServiceModel* HeadsetController::serviceModel()

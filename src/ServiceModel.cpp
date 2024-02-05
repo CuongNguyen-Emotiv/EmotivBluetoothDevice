@@ -36,6 +36,8 @@ QVariant ServiceModel::data(const QModelIndex &index, int role) const
         return service.service()->serviceName();
     case static_cast<int>(ServiceRole::TYPE_ROLE):
         return service.type();
+    case static_cast<int>(ServiceRole::Q_LOW_ENERGY_SERVICE_PTR_ROLE):
+        return QVariant::fromValue(service.service());
     default:
         return QVariant();
     }
@@ -46,6 +48,7 @@ QHash<int, QByteArray> ServiceModel::roleNames() const
     QHash<int, QByteArray> roles;
     roles[static_cast<int>(ServiceRole::NAME_ROLE)] = "name";
     roles[static_cast<int>(ServiceRole::TYPE_ROLE)] = "type";
+    roles[static_cast<int>(ServiceRole::Q_LOW_ENERGY_SERVICE_PTR_ROLE)] = "qLowEnergyServicePtr";
     return roles;
 }
 

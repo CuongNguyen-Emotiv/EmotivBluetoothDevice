@@ -57,7 +57,12 @@ Rectangle {
                 Button {
                     text: "Read"
                     onClicked: {
-                        console.log(model.name)
+                        stackview.push("qrc:/qml/ServiceInfo.qml",
+                                       {
+                                           "qLowEnergyServicePtr": model.qLowEnergyServicePtr,
+                                           "qLowEnergyControllerPtr": headsetController.lowEnergyController
+                                       }
+                                       );
                     }
                 }
 
