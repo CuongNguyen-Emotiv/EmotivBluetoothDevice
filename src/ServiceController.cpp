@@ -1,4 +1,5 @@
 #include "ServiceController.h"
+#include "BluetoothUtility.h"
 
 ServiceController::ServiceController(QObject *parent)
     : QObject{parent}
@@ -23,10 +24,11 @@ void ServiceController::setService(QLowEnergyService *service)
     else {
         onStateChanged(QLowEnergyService::InvalidService);
         onErrorOccurred(QLowEnergyService::UnknownError);
+        mIncludedServiceModel.clear();
+        mCharacteristicModel.clear();
         return;
     }
 
-    connect(mService, &QLowEnergyService::characteristicChanged, this, &ServiceController::onCharacteristicChanged);
     connect(mService, &QLowEnergyService::characteristicRead, this, &ServiceController::onCharacteristicRead);
     connect(mService, &QLowEnergyService::characteristicWritten, this, &ServiceController::onCharacteristicWritten);
     connect(mService, &QLowEnergyService::descriptorRead, this, &ServiceController::onDescriptorRead);
@@ -47,17 +49,8 @@ QString ServiceController::serviceUuid() const
     if (!mService)
         return QString();
 
-    const QBluetoothUuid uuid = mService->serviceUuid();
-    bool success = false;
-    quint16 result16 = uuid.toUInt16(&success);
-    if (success)
-        return "0x" + QString::number(result16, 16);
-
-    quint32 result32 = uuid.toUInt32(&success);
-    if (success)
-        return "0x" + QString::number(result32, 16);
-
-    return uuid.toString().remove('{').remove('}');
+    auto uuid = mService->serviceUuid();
+    return BluetoothUtility::uuidToString(uuid);
 }
 
 QString ServiceController::serviceType() const
@@ -125,7 +118,7 @@ void ServiceController::onStateChanged(QLowEnergyService::ServiceState state)
         mService->discoverDetails();
         break;
     case QLowEnergyService::ServiceState::RemoteServiceDiscovered:
-        addIncludedServices();
+        updateIncludedServiceModel();
         updateCharacteristicModel();
         break;
     default:
@@ -135,7 +128,7 @@ void ServiceController::onStateChanged(QLowEnergyService::ServiceState state)
     emit serviceStateChanged();
 }
 
-void ServiceController::addIncludedServices()
+void ServiceController::updateIncludedServiceModel()
 {
     for(const auto& serviceUuid : mService->includedServices()) {
         auto includedService = mLowEnergyController->createServiceObject(serviceUuid, this);
@@ -150,7 +143,7 @@ void ServiceController::addIncludedServices()
 void ServiceController::updateCharacteristicModel()
 {
     mCharacteristicModel.clear();
-    for (const auto& characteristic : mService->characteristics()) {
+    for (auto& characteristic : mService->characteristics()) {
         mCharacteristicModel.addCharacteristic(characteristic);
     }
 }
@@ -208,13 +201,6 @@ void ServiceController::onCharacteristicWritten(const QLowEnergyCharacteristic &
 void ServiceController::onCharacteristicRead(const QLowEnergyCharacteristic &characteristic, const QByteArray &value)
 {
     qInfo() << "Characteristic read: " << characteristic.name()
-            << characteristic.isValid() << characteristic.uuid() << characteristic.value()
-            << " value: " << value;
-}
-
-void ServiceController::onCharacteristicChanged(const QLowEnergyCharacteristic &characteristic, const QByteArray &value)
-{
-    qInfo() << "Characteristic changed: " << characteristic.name()
             << characteristic.isValid() << characteristic.uuid() << characteristic.value()
             << " value: " << value;
 }

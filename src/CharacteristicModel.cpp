@@ -1,4 +1,5 @@
 #include "CharacteristicModel.h"
+#include "BluetoothUtility.h"
 
 CharacteristicModel::CharacteristicModel(QObject *parent)
     : QAbstractListModel{parent}
@@ -27,6 +28,8 @@ QVariant CharacteristicModel::data(const QModelIndex &index, int role) const
         return characteristic.textValue();
     case HEX_VALUE_ROLE:
         return characteristic.hexValue();
+    case Q_LOWENERGY_CHARACTERISTIC_PTR_ROLE:
+        return QVariant::fromValue(characteristic.characteristic());
     default:
         break;
     }
@@ -42,6 +45,7 @@ QHash<int, QByteArray> CharacteristicModel::roleNames() const
     roles[static_cast<int>(CharacteristicRoles::UUID_ROLE)] = "uuid";
     roles[static_cast<int>(CharacteristicRoles::TEXT_VALUE_ROLE)] = "textValue";
     roles[static_cast<int>(CharacteristicRoles::HEX_VALUE_ROLE)] = "hexValue";
+    roles[static_cast<int>(CharacteristicRoles::Q_LOWENERGY_CHARACTERISTIC_PTR_ROLE)] = "qLowEnergyCharacteristicPtr";
     return roles;
 }
 
@@ -59,10 +63,9 @@ void CharacteristicModel::addCharacteristic(const CharacteristicItem &characteri
     endInsertRows();
 }
 
-CharacteristicItem::CharacteristicItem(const QLowEnergyCharacteristic &characteristic)
-    : mCharacteristic{characteristic}
+CharacteristicItem::CharacteristicItem(const QLowEnergyCharacteristic& characteristic)
 {
-
+    mCharacteristic = characteristic;
 }
 
 QString CharacteristicItem::name() const
@@ -72,64 +75,29 @@ QString CharacteristicItem::name() const
 
 QString CharacteristicItem::properties() const
 {
-    QString result;
     auto properties = mCharacteristic.properties();
-    if (properties & QLowEnergyCharacteristic::Broadcasting)
-        result += "Broadcasting, ";
-    if (properties & QLowEnergyCharacteristic::Read)
-        result += "Read, ";
-    if (properties & QLowEnergyCharacteristic::WriteNoResponse)
-        result += "WriteNoResponse, ";
-    if (properties & QLowEnergyCharacteristic::Write)
-        result += "Write, ";
-    if (properties & QLowEnergyCharacteristic::Notify)
-        result += "Notify, ";
-    if (properties & QLowEnergyCharacteristic::Indicate)
-        result += "Indicate, ";
-    if (properties & QLowEnergyCharacteristic::WriteSigned)
-        result += "WriteSigned, ";
-    if (properties & QLowEnergyCharacteristic::ExtendedProperty)
-        result += "ExtendedProperty, ";
-    return result;
+    return BluetoothUtility::propertiesToString(properties);
 }
 
 QString CharacteristicItem::uuid() const
 {
-    const QBluetoothUuid uuid = mCharacteristic.uuid();
-    bool success = false;
-    quint16 result16 = uuid.toUInt16(&success);
-    if (success)
-        return "0x" + QString::number(result16, 16);
-
-    quint32 result32 = uuid.toUInt32(&success);
-    if (success)
-        return "0x" + QString::number(result32, 16);
-
-    return uuid.toString().remove('{').remove('}');
+    auto uuid = mCharacteristic.uuid();
+    return BluetoothUtility::uuidToString(uuid);
 }
 
 QString CharacteristicItem::textValue() const
 {
-    QByteArray a = mCharacteristic.value();
-    QString result;
-    if (a.isEmpty()) {
-        result = "<none>";
-        return result;
-    }
-
-    result = a;
-    return result;
+    auto value = mCharacteristic.value();
+    return BluetoothUtility::valueToText(value);
 }
 
 QString CharacteristicItem::hexValue() const
 {
-    QByteArray value = mCharacteristic.value();
-    QString result;
-    if (value.isEmpty()) {
-        result = "<none>";
-        return result;
-    }
+    auto value = mCharacteristic.value();
+    return BluetoothUtility::valueToHex(value);
+}
 
-    result = value.toHex(':');
-    return result;
+QLowEnergyCharacteristic *CharacteristicItem::characteristic() const
+{
+    return const_cast<QLowEnergyCharacteristic*>(&mCharacteristic);
 }

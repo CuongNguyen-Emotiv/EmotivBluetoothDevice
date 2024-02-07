@@ -3,5 +3,6 @@
         <file>qml/Main.qml</file>
         <file>qml/HeadsetInfo.qml</file>
         <file>qml/ServiceInfo.qml</file>
+        <file>qml/CharacteristicInfo.qml</file>
     </qresource>
 </RCC>

@@ -43,7 +43,6 @@ public:
     void setLowEnergyController(QLowEnergyController *lowEnergyController);
 
 private slots:
-    void onCharacteristicChanged(const QLowEnergyCharacteristic &characteristic, const QByteArray &value);
     void onCharacteristicRead(const QLowEnergyCharacteristic &characteristic, const QByteArray &value);
     void onCharacteristicWritten(const QLowEnergyCharacteristic &characteristic, const QByteArray &newValue);
     void onDescriptorRead(const QLowEnergyDescriptor &descriptor, const QByteArray &value);
@@ -59,7 +58,7 @@ signals:
     void lowEnergyControllerChanged();
 
 private:
-    void addIncludedServices();
+    void updateIncludedServiceModel();
     void updateCharacteristicModel();
 
     QLowEnergyService *mService = nullptr;

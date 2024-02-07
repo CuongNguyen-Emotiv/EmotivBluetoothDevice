@@ -13,6 +13,7 @@ public:
     QString uuid() const;
     QString textValue() const;
     QString hexValue() const;
+    QLowEnergyCharacteristic* characteristic() const;
 
 private:
     QLowEnergyCharacteristic mCharacteristic;
@@ -28,6 +29,7 @@ public:
         UUID_ROLE,
         TEXT_VALUE_ROLE,
         HEX_VALUE_ROLE,
+        Q_LOWENERGY_CHARACTERISTIC_PTR_ROLE,
     };
     explicit CharacteristicModel(QObject *parent = nullptr);
 

@@ -83,7 +83,7 @@ Rectangle {
             clip: true
             model: serviceController.characteristicModel
             delegate: Rectangle {
-                width: parent.width
+                width: parent ? parent.width : 0
                 height: childrenRect.height
                 border.width: 1
                 border.color: "gray"
@@ -143,6 +143,18 @@ Rectangle {
                         }
                     }
                 }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        stackview.push("qrc:/qml/CharacteristicInfo.qml",
+                                       {
+                                           "qLowEnergyCharacteristicPtr": model.qLowEnergyCharacteristicPtr,
+                                           "qLowEnergyServicePtr": serviceInfoRoot.qLowEnergyServicePtr
+                                       }
+                                       );
+                    }
+                }
             }
         }
 
@@ -163,7 +175,7 @@ Rectangle {
                         stackview.push("qrc:/qml/ServiceInfo.qml",
                                        {
                                            "qLowEnergyServicePtr": model.qLowEnergyServicePtr,
-                                           "qLowEnergyControllerPtr": serviceInfoRoot.qLowEnergyControllerPtr
+                                           "qLowEnergyControllerPtr": serviceController.service
                                        }
                                        );
                     }

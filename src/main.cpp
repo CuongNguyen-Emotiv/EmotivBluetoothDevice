@@ -5,6 +5,7 @@
 #include "Singleton.h"
 #include "HeadsetController.h"
 #include "ServiceController.h"
+#include "CharacteristicController.h"
 
 int main(int argc, char *argv[])
 {
@@ -14,6 +15,7 @@ int main(int argc, char *argv[])
 
     qmlRegisterType<HeadsetController>("HeadsetController", 1, 0, "HeadsetController");
     qmlRegisterType<ServiceController>("ServiceController", 1, 0, "ServiceController");
+    qmlRegisterType<CharacteristicController>("CharacteristicController", 1, 0, "CharacteristicController");
 
     engine.rootContext()->setContextProperty("HostDevice", Singleton<HostDevice>::instance());
 
